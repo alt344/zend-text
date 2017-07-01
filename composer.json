@@ -1,13 +1,12 @@
 {
-    "name": "zendframework/zend-text",
+    "name": "alt344/zend-text",
     "description": " ",
     "license": "BSD-3-Clause",
     "keywords": [
         "zf2",
         "text"
     ],
-    "homepage": "https://github.com/zendframework/zend-text",
-    "extra": {
+   "extra": {
         "branch-alias": {
             "dev-master": "2.6-dev",
             "dev-develop": "2.7-dev"
