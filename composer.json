@@ -6,6 +6,12 @@
         "zf2",
         "text"
     ],
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/alt344/zend-text"
+		}
+	],	
    "extra": {
         "branch-alias": {
             "dev-master": "2.6-dev",
