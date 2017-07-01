@@ -120,7 +120,7 @@ class Row
      * @throws Exception\OverflowException When there are too many columns
      * @return string
      */
-    public function render(array $columnWidths, Decorator $decorator, $padding = 0)
+    public function render(array $columnWidths, Decorator $decorator, $padding = 0, array $rowSpans = [])
     {
         // Prepare an array to store all column widths
         $this->columnWidths = [];
@@ -135,11 +135,52 @@ class Row
         $renderedColumns = [];
         $maxHeight       = 0;
         $colNum          = 0;
-        foreach ($this->columns as $column) {
+
+        // virtual columns
+        $countColumns = count($this->columns);
+        $countRowSpans = count($rowSpans);
+
+        $columsAfterRowSpan = [];
+        $j = 0;
+        for ($i=0; $i<$countColumns+$countRowSpans; $i++){
+            if(in_array($i, $rowSpans)) {
+                $columsAfterRowSpan[] = new Column(null, null, null);
+            }
+            else
+            {
+                $columsAfterRowSpan[] = $this->columns[$j];
+                $j++;
+            }
+        }
+
+        // foreach ($this->columns as $column) {
+        foreach ($columsAfterRowSpan as $column) {
             // Get the colspan of the column
             $colSpan = $column->getColSpan();
 
+            // add empty columns
+            /*
+            // echo "next col:$colNum\r\n";
+            if(is_array($rowSpans) && count($rowSpans)>0){
+                foreach($rowSpans as $rowSpanColNum){
+                    if ($rowSpanColNum == $colNum){
+                        $columnWidth = ($colSpan - 1 + array_sum(array_slice($columnWidths, $colNum, $colSpan)));
+
+                        $renderedColumns[] = [str_repeat(' ', $columnWidth)];
+                        $this->columnWidths[] = $columnWidth;
+
+                        echo "do fill: colNum:$colNum \r\n";
+
+                        $colNum += $colSpan;
+
+                        continue 2;
+                    }
+                }
+            }
+            */
+
             // Verify if there are enough column widths defined
+            // echo "colNum:$colNum colSpan:$colSpan count:".count($columnWidths)."\r\n";
             if (($colNum + $colSpan) > count($columnWidths)) {
                 throw new Exception\OverflowException('Too many columns');
             }

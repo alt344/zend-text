@@ -45,6 +45,13 @@ class Column
     protected $colSpan = 1;
 
     /**
+     * Colspan of the column
+     *
+     * @var int
+     */
+    protected $rowSpan = 1;
+
+    /**
      * Allowed align parameters
      *
      * @var array
@@ -59,7 +66,7 @@ class Column
      * @param int $colSpan  The colspan of the column
      * @param string  $charset  The encoding of the content
      */
-    public function __construct($content = null, $align = null, $colSpan = null, $charset = null)
+    public function __construct($content = null, $align = null, $colSpan = null, $charset = null, $rowSpan = null)
     {
         if ($content !== null) {
             $this->setContent($content, $charset);
@@ -71,6 +78,10 @@ class Column
 
         if ($colSpan !== null) {
             $this->setColSpan($colSpan);
+        }
+
+        if ($rowSpan !== null) {
+            $this->setRowSpan($rowSpan);
         }
     }
 
@@ -150,6 +161,24 @@ class Column
     }
 
     /**
+     * Set the rowspan
+     *
+     * @param  int $rowSpan
+     * @throws Exception\InvalidArgumentException When $rowSpan is smaller than 1
+     * @return Column
+     */
+    public function setRowSpan($rowSpan)
+    {
+        if (is_int($rowSpan) === false or $rowSpan < 1) {
+            throw new Exception\InvalidArgumentException('$rowSpan must be an integer and greater than 0');
+        }
+
+        $this->rowSpan = $rowSpan;
+
+        return $this;
+    }
+
+    /**
      * Get the colspan
      *
      * @return int
@@ -157,6 +186,16 @@ class Column
     public function getColSpan()
     {
         return $this->colSpan;
+    }
+
+    /**
+     * Get the rowspan
+     *
+     * @return int
+     */
+    public function getRowSpan()
+    {
+        return $this->rowSpan;
     }
 
     /**

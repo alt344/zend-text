@@ -101,6 +101,7 @@ class Table
         'defaultColumnAlign',
     ];
 
+
     /**
      * Create a basic table object
      *
@@ -319,6 +320,7 @@ class Table
             $row    = new Row();
             $colNum = 0;
             foreach ($data as $columnData) {
+
                 if (isset($this->defaultColumnAligns[$colNum])) {
                     $align = $this->defaultColumnAligns[$colNum];
                 } else {
@@ -365,7 +367,23 @@ class Table
                 $lastColumnWidths = $columnWidths;
             }
 
-            $renderedRow  = $row->render($this->columnWidths, $this->decorator, $this->padding);
+            // identify if there is any rowspan column up the row at the specified distance
+            $rowNumSub = 0;
+            $rowSpanColumns = [];
+            for ($rowNumSub=0;$rowNumSub<=$rowNum;$rowNumSub++){
+                $columnsSub = $this->rows[$rowNumSub]->getColumns();
+                $colNumSub = 0;
+                foreach ($columnsSub as $columnSub){
+                    $rowSpan = $columnSub->getRowSpan();
+                    if(is_int($rowSpan))
+                        if ($rowSpan>1 && $rowNumSub<$rowNum && $rowNumSub+$rowSpan-1>=$rowNum){
+                            $rowSpanColumns[] = $colNumSub;
+                        }
+                    $colNumSub++;
+                }
+            }
+
+            $renderedRow  = $row->render($this->columnWidths, $this->decorator, $this->padding, $rowSpanColumns);
             $columnWidths = $row->getColumnWidths();
             $numColumns   = count($columnWidths);
 
@@ -400,7 +418,10 @@ class Table
                 }
 
                 if ($drawSeparator) {
-                    $result .= $this->decorator->getVerticalRight();
+                    if(in_array(0, $rowSpanColumns))
+                        $result .= $this->decorator->getVertical();
+                    else
+                        $result .= $this->decorator->getVerticalRight();
 
                     $currentUpperColumn = 0;
                     $currentLowerColumn = 0;
@@ -410,8 +431,12 @@ class Table
                     // Add horizontal lines
                     // Loop through all column widths
                     foreach ($this->columnWidths as $columnNum => $columnWidth) {
+
                         // Add the horizontal line
-                        $result .= str_repeat($this->decorator->getHorizontal(), $columnWidth);
+                        if(in_array($columnNum, $rowSpanColumns))
+                            $result .= str_repeat(' ', $columnWidth);
+                        else
+                            $result .= str_repeat($this->decorator->getHorizontal(), $columnWidth);
 
                         // If this is the last line, break out
                         if (($columnNum + 1) === $totalNumColumns) {
@@ -453,7 +478,14 @@ class Table
                                 break;
 
                             case 0x3:
-                                $result .= $this->decorator->getCross();
+                                if(in_array($columnNum, $rowSpanColumns) && in_array($columnNum+1, $rowSpanColumns))
+                                    $result .= $this->decorator->getVertical();
+                                elseif(in_array($columnNum, $rowSpanColumns))
+                                    $result .= $this->decorator->getVerticalRight();
+                                elseif(in_array($columnNum+1, $rowSpanColumns))
+                                    $result .= $this->decorator->getVerticalLeft();
+                                else
+                                    $result .= $this->decorator->getCross();
                                 break;
 
                             default:
@@ -462,7 +494,10 @@ class Table
                         }
                     }
 
-                    $result .= $this->decorator->getVerticalLeft() . "\n";
+                    if(in_array($columnNum, $rowSpanColumns))
+                        $result .= $this->decorator->getVertical() . "\n";
+                    else
+                        $result .= $this->decorator->getVerticalLeft() . "\n";
                 }
             }
 
